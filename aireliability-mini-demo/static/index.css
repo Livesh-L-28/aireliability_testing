@@ -214,6 +214,47 @@ code, pre {
   font-weight: bold;
 }
 
+/* KPI Bar */
+.kpi-grid {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 16px;
+  margin-top: 24px;
+}
+@media (max-width: 860px) {
+  .kpi-grid { grid-template-columns: repeat(2, 1fr); }
+}
+@media (max-width: 480px) {
+  .kpi-grid { grid-template-columns: 1fr; }
+}
+.kpi-card {
+  background: var(--bg-card);
+  border: 1px solid var(--bg-card-border);
+  padding: 18px 20px;
+  border-radius: var(--border-radius);
+  backdrop-filter: blur(12px);
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+.kpi-title {
+  font-size: 0.75rem;
+  font-weight: 600;
+  color: var(--text-muted);
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+}
+.kpi-value {
+  font-size: 1.5rem;
+  font-weight: 800;
+  color: var(--text-main);
+  letter-spacing: -0.02em;
+}
+.kpi-sub {
+  font-size: 0.75rem;
+  color: var(--text-muted);
+}
+
 /* Controls */
 .section-header h3 {
   font-size: 1.2rem;
@@ -297,6 +338,7 @@ code, pre {
 
 .button-row {
   display: flex;
+  flex-wrap: wrap;
   gap: 12px;
   margin-top: 22px;
 }
@@ -304,10 +346,10 @@ code, pre {
   display: inline-flex;
   align-items: center;
   gap: 8px;
-  padding: 12px 22px;
+  padding: 12px 20px;
   border-radius: 8px;
   font-weight: 600;
-  font-size: 0.95rem;
+  font-size: 0.9rem;
   cursor: pointer;
   transition: var(--transition);
   border: none;
@@ -388,7 +430,7 @@ code, pre {
 }
 .info-label {
   color: var(--text-muted);
-  width: 90px;
+  width: 110px;
 }
 .code-pill {
   background: rgba(255,255,255,0.07);
@@ -451,36 +493,33 @@ code, pre {
   margin-top: 4px;
 }
 
-/* Invariant box */
-.invariant-box {
-  background: rgba(0,0,0,0.35);
-  border: 1px solid var(--bg-card-border);
-  padding: 16px;
-  border-radius: 8px;
+/* Invariants Table */
+.invariants-table-wrap {
+  overflow-x: auto;
   margin-bottom: 16px;
 }
-.inv-title {
-  font-size: 0.8rem;
+.invariants-table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 0.85rem;
+}
+.invariants-table th {
+  text-align: left;
+  padding: 8px 10px;
   color: var(--text-muted);
-  margin-bottom: 8px;
-}
-.inv-flow {
-  display: flex;
-  align-items: center;
-  gap: 10px;
-  font-family: 'JetBrains Mono', monospace;
-  font-size: 0.9rem;
-}
-.inv-pill {
-  background: rgba(255,255,255,0.08);
-  padding: 4px 10px;
-  border-radius: 6px;
-  color: #60a5fa;
-}
-.inv-verdict {
-  margin-top: 12px;
   font-weight: 600;
-  font-size: 0.95rem;
+  border-bottom: 1px solid var(--bg-card-border);
+}
+.invariants-table td {
+  padding: 10px;
+  border-bottom: 1px solid rgba(255,255,255,0.04);
+}
+.inv-cat-pill {
+  font-size: 0.7rem;
+  background: rgba(255,255,255,0.06);
+  padding: 2px 6px;
+  border-radius: 4px;
+  color: var(--text-muted);
 }
 
 /* Alerts */
@@ -626,6 +665,62 @@ code, pre {
   color: var(--text-muted);
   font-size: 1.1rem;
   cursor: pointer;
+}
+
+/* CI Pipeline Simulator */
+.ci-card {
+  border-color: rgba(16, 185, 129, 0.3);
+}
+.ci-pipeline-flow {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin: 18px 0;
+  gap: 10px;
+  flex-wrap: wrap;
+}
+.ci-step {
+  background: rgba(0,0,0,0.4);
+  border: 1px solid var(--bg-card-border);
+  padding: 14px 18px;
+  border-radius: 10px;
+  text-align: center;
+  flex: 1;
+  min-width: 140px;
+}
+.ci-step-icon {
+  font-size: 1.5rem;
+  margin-bottom: 6px;
+}
+.ci-step-title {
+  font-size: 0.85rem;
+  font-weight: 600;
+}
+.ci-step-status {
+  font-size: 0.75rem;
+  font-weight: 700;
+  margin-top: 4px;
+  padding: 2px 6px;
+  border-radius: 4px;
+}
+.ci-step-status.ok { color: #34d399; }
+.ci-step-status.fail { color: #f87171; }
+.ci-step-status.pending { color: #fbbf24; }
+.ci-arrow {
+  color: var(--text-muted);
+  font-weight: bold;
+}
+.ci-log-box {
+  background: #000;
+  border: 1px solid var(--bg-card-border);
+  padding: 12px;
+  border-radius: 8px;
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 0.8rem;
+  color: #94a3b8;
+  max-height: 180px;
+  overflow-y: auto;
+  white-space: pre-wrap;
 }
 
 /* Whiteboard */
