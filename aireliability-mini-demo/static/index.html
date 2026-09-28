@@ -1,0 +1,289 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>AI Reliability Testing Studio</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700;800&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="/static/index.css">
+</head>
+<body>
+  <div class="ambient-glow glow-1"></div>
+  <div class="ambient-glow glow-2"></div>
+
+  <!-- Header -->
+  <header class="header">
+    <div class="container header-inner">
+      <div class="brand">
+        <div class="logo-badge">
+          <span class="pulse-dot"></span>
+          <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/>
+            <path d="m9 12 2 2 4-4"/>
+          </svg>
+        </div>
+        <div>
+          <h1 class="logo-title">AI Reliability Studio</h1>
+          <p class="logo-sub">Deterministic Invariant & Regression Engine</p>
+        </div>
+      </div>
+      <div class="nav-badges">
+        <span class="badge badge-tech">aireliability v0.1.0</span>
+        <span class="badge badge-status">● Live Demo Mode</span>
+      </div>
+    </div>
+  </header>
+
+  <!-- Main Container -->
+  <main class="container main-content">
+    
+    <!-- Hero / Architecture Overview -->
+    <section class="card hero-banner">
+      <div class="hero-text">
+        <div class="pill-tag">Interactive Trajectory Evaluation</div>
+        <h2>Why Surface Text Evaluation Fails</h2>
+        <p>Both compliant and broken agents return <code>"Order ORD-1001 refunded successfully"</code>. Standard unit tests pass both. <strong>aireliability</strong> analyzes intermediate tool trajectories to catch critical violations before they hit production.</p>
+      </div>
+      <div class="architecture-pills">
+        <div class="arch-step">Request</div>
+        <div class="arch-arrow">→</div>
+        <div class="arch-step">Agent</div>
+        <div class="arch-arrow">→</div>
+        <div class="arch-step">ToolOrder Invariant</div>
+        <div class="arch-arrow">→</div>
+        <div class="arch-step">FailureReport</div>
+        <div class="arch-arrow">→</div>
+        <div class="arch-step highlight">RegressionTest</div>
+      </div>
+    </section>
+
+    <!-- Interactive Control Panel -->
+    <section class="card control-card">
+      <div class="section-header">
+        <div>
+          <h3>1. Choose Scenario & Execute Agent</h3>
+          <p class="section-desc">Select whether to run the compliant customer support agent or the buggy agent.</p>
+        </div>
+      </div>
+
+      <div class="controls-grid">
+        <div class="form-group">
+          <label for="orderIdInput">Target Order ID</label>
+          <input type="text" id="orderIdInput" value="ORD-1001" placeholder="ORD-1001" class="input-field" />
+        </div>
+
+        <div class="form-group">
+          <label>Agent Implementation</label>
+          <div class="radio-toggle-group">
+            <label class="radio-card active" id="labelCorrect">
+              <input type="radio" name="agentType" value="correct" checked>
+              <div class="radio-card-content">
+                <span class="radio-title">✅ Correct Agent</span>
+                <span class="radio-desc"><code>check_order</code> ➔ <code>refund_order</code></span>
+              </div>
+            </label>
+            <label class="radio-card" id="labelBroken">
+              <input type="radio" name="agentType" value="broken">
+              <div class="radio-card-content">
+                <span class="radio-title">❌ Broken Agent (Bug)</span>
+                <span class="radio-desc"><code>refund_order</code> ➔ <code>check_order</code></span>
+              </div>
+            </label>
+          </div>
+        </div>
+      </div>
+
+      <div class="button-row">
+        <button id="btnRunEval" class="btn btn-primary">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polygon points="5 3 19 12 5 21 5 3"/></svg>
+          Run Reliability Evaluation
+        </button>
+        <button id="btnQuickCompare" class="btn btn-secondary">
+          ⚡ Run Side-by-Side Comparison
+        </button>
+      </div>
+    </section>
+
+    <!-- Loading State -->
+    <div id="loadingIndicator" class="loading-state hidden">
+      <div class="spinner"></div>
+      <p>Executing agent & evaluating invariants with <code>aireliability</code>...</p>
+    </div>
+
+    <!-- Results Display -->
+    <div id="resultsSection" class="results-grid hidden">
+      
+      <!-- Column 1: Agent Execution & Trajectory -->
+      <div class="card result-card">
+        <div class="card-title-bar">
+          <h4>Agent Execution & Trajectory</h4>
+          <span id="agentTypeBadge" class="badge"></span>
+        </div>
+
+        <div class="info-block">
+          <div class="info-row">
+            <span class="info-label">Trace ID:</span>
+            <code id="resTraceId" class="code-pill"></code>
+          </div>
+          <div class="info-row">
+            <span class="info-label">User Output:</span>
+            <span id="resAgentOutput" class="text-output"></span>
+          </div>
+        </div>
+
+        <h5 class="subhead">Captured ExecutionTrace Steps</h5>
+        <div id="stepsTimeline" class="timeline"></div>
+
+        <div class="raw-trace-toggle">
+          <button id="btnToggleRaw" class="btn-link">View JSON ExecutionTrace</button>
+          <pre id="rawTraceJson" class="json-viewer hidden"></pre>
+        </div>
+      </div>
+
+      <!-- Column 2: Invariant Check & Reports -->
+      <div class="card result-card">
+        <div class="card-title-bar">
+          <h4>Reliability Invariant Verification</h4>
+          <span id="evalStatusBadge" class="badge"></span>
+        </div>
+
+        <div class="invariant-box">
+          <div class="inv-title">Operational Rule Invariant:</div>
+          <div class="inv-flow">
+            <span class="inv-pill">check_order</span>
+            <span class="arrow">➔</span>
+            <span class="inv-pill">refund_order</span>
+          </div>
+          <div id="invVerdict" class="inv-verdict"></div>
+        </div>
+
+        <!-- Failure Analysis Card (When Broken) -->
+        <div id="failureCard" class="alert-box alert-failure hidden">
+          <div class="alert-header">
+            <span class="alert-badge">Structured FailureReport</span>
+            <span id="failCategoryBadge" class="badge badge-danger"></span>
+          </div>
+          <p id="failReason" class="alert-reason"></p>
+          <div class="diff-box">
+            <div class="diff-line diff-expected">
+              <span>Expected Order:</span>
+              <code id="diffExpected"></code>
+            </div>
+            <div class="diff-line diff-actual">
+              <span>Actual Trajectory:</span>
+              <code id="diffActual"></code>
+            </div>
+          </div>
+        </div>
+
+        <!-- Regression Test Card (Generated from failure) -->
+        <div id="regressionCard" class="alert-box alert-regression hidden">
+          <div class="alert-header">
+            <span class="alert-badge-green">🛡️ Auto-Generated Regression Test</span>
+            <span class="badge badge-success">CI/CD Guard Active</span>
+          </div>
+          <div class="reg-details">
+            <div><strong>Regression ID:</strong> <code id="regId"></code></div>
+            <div><strong>Source Failure:</strong> <code id="regSourceFail"></code></div>
+            <div><strong>Locked Invariant:</strong> <code>check_order ➔ refund_order</code></div>
+            <p class="reg-note">"This failure has been synthesized into an automated regression test to guarantee future prompt or model iterations cannot reintroduce this violation."</p>
+          </div>
+        </div>
+
+        <!-- Success Celebration Card (When Correct) -->
+        <div id="passCard" class="alert-box alert-success hidden">
+          <div class="alert-header">
+            <span class="alert-badge-green">✔ Trajectory Verified</span>
+            <span class="badge badge-success">Score 1.0</span>
+          </div>
+          <p class="pass-desc">The agent properly validated order eligibility prior to initiating payment refund. Business rule invariants satisfied.</p>
+        </div>
+
+      </div>
+
+    </div>
+
+    <!-- Side-by-Side Comparison Modal / Section -->
+    <section id="compareSection" class="card compare-card hidden">
+      <div class="section-header">
+        <h3>Side-by-Side Comparison: Compliant vs Broken Agent</h3>
+        <button id="btnCloseCompare" class="btn-close">✕</button>
+      </div>
+      <div class="compare-grid">
+        <div class="compare-col" id="colPass">
+          <div class="col-head pass-head">
+            <h5>✅ Compliant Agent</h5>
+            <span class="badge badge-success">PASS</span>
+          </div>
+          <div class="traj-vis">
+            <div class="step-card step-ok">1. check_order (eligibility verified)</div>
+            <div class="step-arrow">↓</div>
+            <div class="step-card step-ok">2. refund_order (refund issued)</div>
+          </div>
+          <div class="output-preview">Output: "Order ORD-1001 refunded successfully"</div>
+        </div>
+
+        <div class="compare-col" id="colFail">
+          <div class="col-head fail-head">
+            <h5>❌ Broken Agent</h5>
+            <span class="badge badge-danger">FAIL</span>
+          </div>
+          <div class="traj-vis">
+            <div class="step-card step-err">1. refund_order (money refunded FIRST!)</div>
+            <div class="step-arrow">↓</div>
+            <div class="step-card step-warn">2. check_order (checked too late)</div>
+          </div>
+          <div class="output-preview">Output: "Order ORD-1001 refunded successfully"</div>
+          <div class="note-box">Notice: The outputs are identical, but only <code>aireliability</code> caught the illegal financial operation!</div>
+        </div>
+      </div>
+    </section>
+
+    <!-- Interview Whiteboard Reference -->
+    <section class="card interview-card">
+      <div class="section-header">
+        <div>
+          <h3>Interview Cheat-Sheet: What to Point at</h3>
+          <p class="section-desc">Key talking points to explain this live in 60 seconds.</p>
+        </div>
+      </div>
+      <div class="whiteboard-grid">
+        <div class="wb-card">
+          <span class="wb-num">01</span>
+          <h4>The Problem</h4>
+          <p>Agents have non-deterministic trajectories. Testing the final response text passes even when side-effects run illegally.</p>
+        </div>
+        <div class="wb-card">
+          <span class="wb-num">02</span>
+          <h4>ExecutionTrace</h4>
+          <p>Captures all <code>StepType.TOOL</code> calls with inputs, outputs, and timestamps in an immutable Pydantic model.</p>
+        </div>
+        <div class="wb-card">
+          <span class="wb-num">03</span>
+          <h4>Deterministic Invariant</h4>
+          <p><code>ToolOrder</code> mathematically asserts sequence dependencies without flaky or expensive LLM-as-a-judge calls.</p>
+        </div>
+        <div class="wb-card">
+          <span class="wb-num">04</span>
+          <h4>Regression Synthesis</h4>
+          <p><code>RegressionGenerator</code> permanently locks down fixed failures into CI/CD regression test suites.</p>
+        </div>
+      </div>
+    </section>
+
+  </main>
+
+  <footer class="footer">
+    <div class="container footer-inner">
+      <p>Built with <strong>aireliability</strong> • Zero Cloud APIs • Fully Deterministic Evaluation</p>
+      <div class="footer-links">
+        <a href="https://github.com/Livesh-L-28/aireliability_testing" target="_blank" rel="noreferrer">GitHub Repository</a>
+      </div>
+    </div>
+  </footer>
+
+  <script src="/static/app.js"></script>
+</body>
+</html>
