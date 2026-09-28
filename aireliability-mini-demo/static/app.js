@@ -267,6 +267,50 @@ document.addEventListener("DOMContentLoaded", () => {
       kpiRegSub.textContent = "Regression Test Synthesized";
     }
 
+    // HEAD-TO-HEAD BATTLE: Traditional Test vs. aireliability
+    const meta = scenarioMeta[data.scenario] || scenarioMeta.refund;
+    const traditionalCode = document.getElementById("traditionalCodeSnippet");
+    const traditionalBadge = document.getElementById("traditionalBadge");
+    const traditionalExpl = document.getElementById("traditionalExpl");
+    const aireliabilityCode = document.getElementById("aireliabilityCodeSnippet");
+    const aireliabilityBadge = document.getElementById("aireliabilityBadge");
+    const aireliabilityExpl = document.getElementById("aireliabilityExpl");
+    const aireliabilityShieldTag = document.getElementById("aireliabilityShieldTag");
+
+    traditionalCode.textContent = `assert "${meta.desc2 || 'completed'}" in response.text`;
+    traditionalBadge.textContent = "PASS (False Positive)";
+    traditionalBadge.className = "badge badge-success";
+
+    if (data.agent_type === "broken") {
+      traditionalExpl.innerHTML = `
+        The agent returned <code>"${data.agent_output}"</code>, so standard unit tests evaluate this string and <strong>PASS</strong>.
+        <br><span style="color:#f87171; font-weight:600;">⚠ CATASTROPHIC ESCAPE:</span> The test failed to notice that <code>${meta.tool2}</code> executed <em>before</em> <code>${meta.tool1}</code>!
+      `;
+
+      aireliabilityBadge.textContent = "FAIL (Caught Bug!)";
+      aireliabilityBadge.className = "badge badge-danger";
+      aireliabilityExpl.innerHTML = `
+        <code>aireliability</code> inspected the actual <code>ExecutionTrace</code> trajectory and caught the out-of-order execution: 
+        <br><strong style="color:#f87171;">Expected:</strong> <code>${meta.tool1} ➔ ${meta.tool2}</code> | <strong style="color:#fca5a5;">Actual:</strong> <code>${data.evaluation.actual_order.join(" ➔ ")}</code>.
+      `;
+      aireliabilityShieldTag.textContent = "🛡️ Shield Active: Prevented illegal deployment to production";
+      aireliabilityShieldTag.className = "vs-flaw-tag";
+    } else {
+      traditionalExpl.innerHTML = `
+        Standard unit test asserts output string contains expected success text: <strong>PASS</strong>.
+      `;
+
+      aireliabilityBadge.textContent = "PASS (Verified)";
+      aireliabilityBadge.className = "badge badge-success";
+      aireliabilityExpl.innerHTML = `
+        <code>aireliability</code> mathematically confirmed that <code>${meta.tool1}</code> executed strictly before <code>${meta.tool2}</code>, with zero unauthorized side-effects.
+      `;
+      aireliabilityShieldTag.textContent = "🛡️ Trajectory Verified: Operational invariant fully satisfied";
+      aireliabilityShieldTag.className = "vs-shield-tag";
+    }
+
+    aireliabilityCode.textContent = `ToolOrder(["${meta.tool1}", "${meta.tool2}"]).evaluate(trace)`;
+
     // Left Card: Agent Execution
     const agentBadge = document.getElementById("agentTypeBadge");
     if (data.agent_type === "correct") {

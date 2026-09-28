@@ -196,7 +196,75 @@
     </div>
 
     <!-- Main Results Section -->
-    <div id="resultsSection" class="results-grid hidden">
+    <div id="resultsSection" class="results-container hidden">
+      
+      <!-- HEAD-TO-HEAD BATTLE: Normal Testing vs aireliability -->
+      <section class="card vs-comparison-card">
+        <div class="vs-header">
+          <div class="vs-title-wrap">
+            <span class="pill-tag" style="background: rgba(245, 158, 11, 0.2); color: #fbbf24; border-color: rgba(245, 158, 11, 0.4);">HEAD-TO-HEAD AUDIT</span>
+            <h3>Normal Testing vs. <code>aireliability</code> Invariant Testing</h3>
+            <p class="section-desc">Comparing how traditional assertion methods perform compared to intermediate trajectory reliability testing.</p>
+          </div>
+        </div>
+
+        <div class="vs-grid">
+          <!-- Traditional / Normal Test Box -->
+          <div class="vs-col vs-traditional" id="vsTraditionalBox">
+            <div class="vs-col-badge">
+              <span class="vs-icon">📄</span>
+              <div>
+                <h4>Normal Unit Test (Text / Output Only)</h4>
+                <p>Asserts on final generated response string</p>
+              </div>
+            </div>
+            
+            <div class="vs-code-snippet">
+              <span class="code-comment"># Traditional Unit Test (pytest / unittest)</span>
+              <code id="traditionalCodeSnippet">assert "refunded successfully" in response.text</code>
+            </div>
+
+            <div class="vs-status-box" id="traditionalStatusBox">
+              <div class="vs-status-header">
+                <span class="vs-verdict-title">Test Result:</span>
+                <span class="badge badge-success" id="traditionalBadge">PASS (False Positive)</span>
+              </div>
+              <p class="vs-status-explanation" id="traditionalExpl">
+                The agent returned <em>"refunded successfully"</em>, so standard text assertions pass 100%. <strong>However, this completely misses that the money was refunded BEFORE eligibility was checked!</strong>
+              </p>
+            </div>
+            <div class="vs-flaw-tag">⚠ Critical Flaw: Blind to illegal side-effects & tool ordering</div>
+          </div>
+
+          <!-- aireliability Invariant Test Box -->
+          <div class="vs-col vs-aireliability" id="vsAireliabilityBox">
+            <div class="vs-col-badge">
+              <span class="vs-icon">🛡️</span>
+              <div>
+                <h4>aireliability (Trajectory Invariant Testing)</h4>
+                <p>Asserts on deterministic tool sequence in <code>ExecutionTrace</code></p>
+              </div>
+            </div>
+
+            <div class="vs-code-snippet">
+              <span class="code-comment"># Invariant Rule (aireliability)</span>
+              <code id="aireliabilityCodeSnippet">ToolOrder(["check_order", "refund_order"]).evaluate(trace)</code>
+            </div>
+
+            <div class="vs-status-box" id="aireliabilityStatusBox">
+              <div class="vs-status-header">
+                <span class="vs-verdict-title">Invariant Result:</span>
+                <span class="badge" id="aireliabilityBadge"></span>
+              </div>
+              <p class="vs-status-explanation" id="aireliabilityExpl"></p>
+            </div>
+            <div class="vs-shield-tag" id="aireliabilityShieldTag">🛡️ Trajectory Verified: Enforces business logic safety</div>
+          </div>
+        </div>
+      </section>
+
+      <!-- Results Grid (Trajectory + Invariants Suite) -->
+      <div class="results-grid">
       
       <!-- Left Column: Agent Trajectory Visualizer -->
       <div class="card result-card">
@@ -298,9 +366,8 @@
           <p class="pass-desc" id="passCardDesc">The agent properly validated prerequisites before initiating side-effects. Sequence, safety, presence, and latency invariants fully verified.</p>
         </div>
 
-      </div>
-
-    </div>
+      </div> <!-- end results-grid -->
+    </div> <!-- end results-container -->
 
     <!-- Side-by-Side Comparison Section -->
     <section id="compareSection" class="card compare-card hidden">

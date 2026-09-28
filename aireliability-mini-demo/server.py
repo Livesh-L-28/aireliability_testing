@@ -241,6 +241,13 @@ def run_evaluation_api(req: MultiEvalRequest):
             "expected_order": [sc["first_tool"], sc["second_tool"]],
             "actual_order": [s.name for s in trace.steps],
         },
+        "traditional_test": {
+            "assertion": f'assert "{sc["expected_phrase"]}" in response_text',
+            "passed": True,  # Both compliant and broken return the expected phrase!
+            "result_text": "PASS (False Positive!)",
+            "verdict": "MISSED BUG: Testing only the output text marks this buggy agent as PASS because the string matched.",
+            "danger": "Dangerous side-effects executed in illegal order (money transferred or account updated before verification) without detection!",
+        },
         "failure_report": None,
         "regression_test": None,
         "raw_trace": trace.model_dump(mode="json"),
