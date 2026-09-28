@@ -1,6 +1,14 @@
-// AI Reliability Studio Frontend Logic v2.0
+// AI Reliability Studio Frontend Logic v3.0
 
 document.addEventListener("DOMContentLoaded", () => {
+  // Elements
+  const scenarioCards = document.querySelectorAll(".sc-card");
+  const scenarioSummaryDesc = document.getElementById("scenarioSummaryDesc");
+  const inputLabelText = document.getElementById("inputLabelText");
+  const scenarioInput = document.getElementById("scenarioInput");
+  const correctFlowDesc = document.getElementById("correctFlowDesc");
+  const brokenFlowDesc = document.getElementById("brokenFlowDesc");
+
   const btnRunEval = document.getElementById("btnRunEval");
   const btnQuickCompare = document.getElementById("btnQuickCompare");
   const btnCloseCompare = document.getElementById("btnCloseCompare");
@@ -8,7 +16,6 @@ document.addEventListener("DOMContentLoaded", () => {
   const btnCloseCI = document.getElementById("btnCloseCI");
   const compareSection = document.getElementById("compareSection");
   const ciSection = document.getElementById("ciSection");
-  const orderIdInput = document.getElementById("orderIdInput");
   const labelCorrect = document.getElementById("labelCorrect");
   const labelBroken = document.getElementById("labelBroken");
   const loadingIndicator = document.getElementById("loadingIndicator");
@@ -17,7 +24,70 @@ document.addEventListener("DOMContentLoaded", () => {
   const btnCopyJson = document.getElementById("btnCopyJson");
   const rawTraceJson = document.getElementById("rawTraceJson");
 
+  // State
+  let selectedScenario = "refund";
   let currentEvaluationData = null;
+
+  const scenarioMeta = {
+    refund: {
+      title: "Customer Refund Agent",
+      label: "Order ID Under Test",
+      defaultInput: "ORD-1001",
+      tool1: "check_order",
+      tool2: "refund_order",
+      desc1: "Eligibility check",
+      desc2: "Financial refund",
+    },
+    admin: {
+      title: "Admin Account Upgrade Agent",
+      label: "User / Account ID Under Test",
+      defaultInput: "USR-8821",
+      tool1: "authenticate_admin",
+      tool2: "update_account",
+      desc1: "MFA Authentication",
+      desc2: "Privilege update",
+    },
+    wire: {
+      title: "Bank Wire Transfer Agent",
+      label: "Customer ID Under Test",
+      defaultInput: "CUST-902",
+      tool1: "verify_kyc",
+      tool2: "execute_wire_transfer",
+      desc1: "KYC Compliance check",
+      desc2: "Disburse money wire",
+    },
+    cancel: {
+      title: "Order Cancellation Agent",
+      label: "Order ID Under Test",
+      defaultInput: "ORD-5544",
+      tool1: "lookup_order",
+      tool2: "cancel_order",
+      desc1: "Shipment lookup",
+      desc2: "Inventory cancel",
+    },
+  };
+
+  // Scenario Card Click Listener
+  scenarioCards.forEach((card) => {
+    card.addEventListener("click", () => {
+      scenarioCards.forEach((c) => c.classList.remove("active"));
+      card.classList.add("active");
+
+      selectedScenario = card.getAttribute("data-scenario");
+      updateScenarioUI(selectedScenario);
+      btnRunEval.click();
+    });
+  });
+
+  function updateScenarioUI(scKey) {
+    const meta = scenarioMeta[scKey] || scenarioMeta.refund;
+    scenarioSummaryDesc.textContent = `Currently testing: ${meta.title}`;
+    inputLabelText.textContent = meta.label;
+    scenarioInput.value = meta.defaultInput;
+
+    correctFlowDesc.innerHTML = `<code>${meta.tool1}</code> ➔ <code>${meta.tool2}</code>`;
+    brokenFlowDesc.innerHTML = `<code>${meta.tool2}</code> ➔ <code>${meta.tool1}</code>`;
+  }
 
   // Radio button styling toggle
   document.querySelectorAll('input[name="agentType"]').forEach((radio) => {
@@ -54,6 +124,7 @@ document.addEventListener("DOMContentLoaded", () => {
   // Quick Compare toggle
   btnQuickCompare.addEventListener("click", () => {
     compareSection.classList.remove("hidden");
+    renderComparisonVisualizer();
     compareSection.scrollIntoView({ behavior: "smooth" });
   });
 
@@ -61,7 +132,31 @@ document.addEventListener("DOMContentLoaded", () => {
     compareSection.classList.add("hidden");
   });
 
-  // CI Pipeline Simulator toggle & execution
+  function renderComparisonVisualizer() {
+    const meta = scenarioMeta[selectedScenario] || scenarioMeta.refund;
+    const passVis = document.getElementById("comparePassVis");
+    const failVis = document.getElementById("compareFailVis");
+    const passOut = document.getElementById("comparePassOut");
+    const failOut = document.getElementById("compareFailOut");
+
+    passVis.innerHTML = `
+      <div class="step-card step-ok">1. ${meta.tool1} (${meta.desc1})</div>
+      <div class="step-arrow">↓</div>
+      <div class="step-card step-ok">2. ${meta.tool2} (${meta.desc2})</div>
+    `;
+
+    failVis.innerHTML = `
+      <div class="step-card step-err">1. ${meta.tool2} (EXECUTED PREMATURELY!)</div>
+      <div class="step-arrow">↓</div>
+      <div class="step-card step-warn">2. ${meta.tool1} (Validated too late)</div>
+    `;
+
+    const sampleOut = currentEvaluationData ? currentEvaluationData.agent_output : "Workflow finished successfully";
+    passOut.textContent = `Output: "${sampleOut}"`;
+    failOut.textContent = `Output: "${sampleOut}"`;
+  }
+
+  // CI Pipeline Simulator
   btnSimulateCI.addEventListener("click", () => {
     ciSection.classList.remove("hidden");
     ciSection.scrollIntoView({ behavior: "smooth" });
@@ -76,13 +171,14 @@ document.addEventListener("DOMContentLoaded", () => {
     const ciStep3 = document.getElementById("ciInvariantStatus");
     const ciDeploy = document.getElementById("ciDeployStatus");
     const logBox = document.getElementById("ciLogBox");
+    const meta = scenarioMeta[selectedScenario] || scenarioMeta.refund;
 
-    ciStep3.textContent = "Running aireliability suite...";
+    ciStep3.textContent = "Evaluating invariants...";
     ciStep3.className = "ci-step-status pending";
     ciDeploy.textContent = "Evaluating...";
     ciDeploy.className = "ci-step-status pending";
 
-    logBox.textContent = "[CI] Initializing runner...\n[CI] Step 1: Flake8 & Ruff linting passed.\n[CI] Step 2: Pytest unit tests passed (3/3 functions).\n[CI] Step 3: Invoking aireliability regression invariants...\n";
+    logBox.textContent = `[CI] Initializing runner for scenario: ${meta.title}...\n[CI] Step 1: Flake8 & Ruff linting passed.\n[CI] Step 2: Pytest unit tests passed (3/3 functions).\n[CI] Step 3: Invoking aireliability regression invariants...\n`;
 
     setTimeout(() => {
       const isCompliant = currentEvaluationData && currentEvaluationData.agent_type === "correct";
@@ -93,7 +189,7 @@ document.addEventListener("DOMContentLoaded", () => {
         ciDeploy.textContent = "Deployment Approved ✔";
         ciDeploy.className = "ci-step-status ok";
 
-        logBox.textContent += "[CI] ✔ Invariant 'check_order -> refund_order' PASSED.\n" +
+        logBox.textContent += `[CI] ✔ Invariant '${meta.tool1} -> ${meta.tool2}' PASSED.\n` +
           "[CI] ✔ Safety policy 'no destructive tools' PASSED.\n" +
           "[CI] ✔ SLA Latency constraint PASSED (<1000ms).\n" +
           "[CI] SUCCESS: Build certified reliable. Triggering production CD rollout!\n";
@@ -103,9 +199,9 @@ document.addEventListener("DOMContentLoaded", () => {
         ciDeploy.textContent = "Deployment BLOCKED 🛑";
         ciDeploy.className = "ci-step-status fail";
 
-        logBox.textContent += "[CI] ✖ CRITICAL FAILURE: Invariant 'check_order -> refund_order' VIOLATED!\n" +
-          "[CI] ✖ Tool 'refund_order' executed before verification 'check_order'.\n" +
-          "[CI] 🛡️ RegressionGenerator active: synthesized test case 'reg_task_incorrect'.\n" +
+        logBox.textContent += `[CI] ✖ CRITICAL FAILURE: Invariant '${meta.tool1} -> ${meta.tool2}' VIOLATED!\n` +
+          `[CI] ✖ Tool '${meta.tool2}' executed before prerequisite '${meta.tool1}'.\n` +
+          `[CI] 🛡️ RegressionGenerator active: synthesized test case 'reg_${selectedScenario}_violation'.\n` +
           "[CI] BLOCKED: Release halted by aireliability gatekeeper. PR cannot be merged!\n";
       }
     }, 900);
@@ -113,7 +209,7 @@ document.addEventListener("DOMContentLoaded", () => {
 
   // Run Evaluation click handler
   btnRunEval.addEventListener("click", async () => {
-    const orderId = orderIdInput.value.trim() || "ORD-1001";
+    const paramVal = scenarioInput.value.trim() || scenarioMeta[selectedScenario].defaultInput;
     const selectedAgent = document.querySelector('input[name="agentType"]:checked').value;
 
     loadingIndicator.classList.remove("hidden");
@@ -124,7 +220,8 @@ document.addEventListener("DOMContentLoaded", () => {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
-          order_id: orderId,
+          scenario: selectedScenario,
+          param: paramVal,
           agent_type: selectedAgent,
         }),
       });
@@ -180,6 +277,7 @@ document.addEventListener("DOMContentLoaded", () => {
       agentBadge.className = "badge badge-danger";
     }
 
+    document.getElementById("resScenarioTitle").textContent = data.scenario_title;
     document.getElementById("resTraceId").textContent = data.trace_id;
     document.getElementById("resAgentOutput").textContent = `"${data.agent_output}"`;
     document.getElementById("resLatency").textContent = `${data.latency_ms || 1.2} ms`;
@@ -194,7 +292,7 @@ document.addEventListener("DOMContentLoaded", () => {
       stepEl.innerHTML = `
         <div class="step-badge">${step.step_num}</div>
         <div class="step-body">
-          <div class="step-name">${step.name}(order_id="${data.order_id}")</div>
+          <div class="step-name">${step.name}(param="${data.param_val}")</div>
           <div class="step-meta">Type: ${step.type} • Result: ${JSON.stringify(step.output)}</div>
         </div>
       `;
@@ -230,10 +328,12 @@ document.addEventListener("DOMContentLoaded", () => {
     const failureCard = document.getElementById("failureCard");
     const regressionCard = document.getElementById("regressionCard");
     const passCard = document.getElementById("passCard");
+    const passCardDesc = document.getElementById("passCardDesc");
 
     if (data.evaluation.passed) {
       evalBadge.textContent = "SUITE PASSED";
       evalBadge.className = "badge badge-success";
+      passCardDesc.textContent = `All prerequisites verified before initiating side-effects in ${data.scenario_title}. Invariant sequence, safety, presence, and latency verified.`;
 
       passCard.classList.remove("hidden");
       failureCard.classList.add("hidden");
@@ -256,12 +356,15 @@ document.addEventListener("DOMContentLoaded", () => {
         regressionCard.classList.remove("hidden");
         document.getElementById("regId").textContent = data.regression_test.id;
         document.getElementById("regSourceFail").textContent = data.regression_test.source_failure_id;
+        document.getElementById("regTargetCase").textContent = data.regression_test.target_test_case;
+        document.getElementById("regLockedContract").textContent = data.regression_test.required_invariant;
       }
     }
 
     resultsSection.scrollIntoView({ behavior: "smooth" });
   }
 
-  // Auto-run once on load for immediate satisfaction
+  // Initialize with default scenario
+  updateScenarioUI("refund");
   btnRunEval.click();
 });

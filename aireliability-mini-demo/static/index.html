@@ -43,13 +43,13 @@
     <section class="card hero-banner">
       <div class="hero-text">
         <div class="pill-tag">Production Invariant Verification</div>
-        <h2>Deterministic Reliability For Tool-Calling Agents</h2>
-        <p>Both compliant and broken agents return <code>"Order ORD-1001 refunded successfully"</code>. Surface-level string checks pass both. <strong>aireliability</strong> analyzes intermediate tool trajectories to enforce non-negotiable operational invariants.</p>
+        <h2>Why Surface Text Evaluation Fails AI Agents</h2>
+        <p>Whether compliant or broken, AI agents often produce convincing, identical output strings. <strong>aireliability</strong> monitors and validates intermediate tool trajectories to enforce non-negotiable operational invariants across real-world business workflows.</p>
       </div>
       <div class="architecture-pills">
         <div class="arch-step">1. User Request</div>
         <div class="arch-arrow">→</div>
-        <div class="arch-step">2. Agent Trajectory</div>
+        <div class="arch-step">2. Tool Trajectory</div>
         <div class="arch-arrow">→</div>
         <div class="arch-step">3. ExecutionTrace</div>
         <div class="arch-arrow">→</div>
@@ -59,7 +59,113 @@
       </div>
     </section>
 
-    <!-- Top KPI Stats Bar (Real-time telemetry) -->
+    <!-- STEP 1: Select From 4 Real-World Scenarios -->
+    <section class="card scenario-card">
+      <div class="section-header">
+        <div>
+          <h3>1. Select Business Scenario</h3>
+          <p class="section-desc">Pick an agent workflow to test different mission-critical invariants.</p>
+        </div>
+      </div>
+
+      <div class="scenario-selector-grid">
+        <!-- Scenario 1: Refund -->
+        <div class="sc-card active" data-scenario="refund">
+          <div class="sc-header">
+            <span class="sc-icon">💳</span>
+            <span class="sc-badge">Customer Support</span>
+          </div>
+          <h4 class="sc-title">Customer Refund</h4>
+          <p class="sc-desc">Agent must verify eligibility with <code>check_order</code> before issuing financial refund with <code>refund_order</code>.</p>
+          <div class="sc-rule">Invariant: <code>check_order</code> ➔ <code>refund_order</code></div>
+        </div>
+
+        <!-- Scenario 2: Admin -->
+        <div class="sc-card" data-scenario="admin">
+          <div class="sc-header">
+            <span class="sc-icon">🛡️</span>
+            <span class="sc-badge">Security & IAM</span>
+          </div>
+          <h4 class="sc-title">Admin Account Upgrade</h4>
+          <p class="sc-desc">Agent must authenticate credentials with <code>authenticate_admin</code> before invoking <code>update_account</code>.</p>
+          <div class="sc-rule">Invariant: <code>authenticate_admin</code> ➔ <code>update_account</code></div>
+        </div>
+
+        <!-- Scenario 3: Wire Transfer -->
+        <div class="sc-card" data-scenario="wire">
+          <div class="sc-header">
+            <span class="sc-icon">🏦</span>
+            <span class="sc-badge">Fintech & Banking</span>
+          </div>
+          <h4 class="sc-title">Wire Transfer</h4>
+          <p class="sc-desc">Agent must pass compliance with <code>verify_kyc</code> before sending funds via <code>execute_wire_transfer</code>.</p>
+          <div class="sc-rule">Invariant: <code>verify_kyc</code> ➔ <code>execute_wire_transfer</code></div>
+        </div>
+
+        <!-- Scenario 4: Order Cancel -->
+        <div class="sc-card" data-scenario="cancel">
+          <div class="sc-header">
+            <span class="sc-icon">📦</span>
+            <span class="sc-badge">E-Commerce</span>
+          </div>
+          <h4 class="sc-title">Order Cancellation</h4>
+          <p class="sc-desc">Agent must inspect shipment with <code>lookup_order</code> before modifying database with <code>cancel_order</code>.</p>
+          <div class="sc-rule">Invariant: <code>lookup_order</code> ➔ <code>cancel_order</code></div>
+        </div>
+      </div>
+    </section>
+
+    <!-- STEP 2: Control Panel -->
+    <section class="card control-card">
+      <div class="section-header">
+        <div>
+          <h3>2. Configure & Run Trajectory Simulation</h3>
+          <p class="section-desc" id="scenarioSummaryDesc">Currently testing: Customer Refund Agent</p>
+        </div>
+      </div>
+
+      <div class="controls-grid">
+        <div class="form-group">
+          <label id="inputLabelText" for="scenarioInput">Order ID Under Test</label>
+          <input type="text" id="scenarioInput" value="ORD-1001" class="input-field" />
+        </div>
+
+        <div class="form-group">
+          <label>Select Agent Implementation</label>
+          <div class="radio-toggle-group">
+            <label class="radio-card active" id="labelCorrect">
+              <input type="radio" name="agentType" value="correct" checked>
+              <div class="radio-card-content">
+                <span class="radio-title">✅ Compliant Agent</span>
+                <span class="radio-desc" id="correctFlowDesc"><code>check_order</code> ➔ <code>refund_order</code></span>
+              </div>
+            </label>
+            <label class="radio-card" id="labelBroken">
+              <input type="radio" name="agentType" value="broken">
+              <div class="radio-card-content">
+                <span class="radio-title">❌ Buggy Agent (Regression)</span>
+                <span class="radio-desc" id="brokenFlowDesc"><code>refund_order</code> ➔ <code>check_order</code></span>
+              </div>
+            </label>
+          </div>
+        </div>
+      </div>
+
+      <div class="button-row">
+        <button id="btnRunEval" class="btn btn-primary">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polygon points="5 3 19 12 5 21 5 3"/></svg>
+          Run Invariant Evaluation
+        </button>
+        <button id="btnQuickCompare" class="btn btn-secondary">
+          ⚡ Side-by-Side Trajectory Compare
+        </button>
+        <button id="btnSimulateCI" class="btn btn-secondary">
+          🚀 Run Simulated CI Pipeline
+        </button>
+      </div>
+    </section>
+
+    <!-- Real-time KPI Stats Bar -->
     <section class="kpi-grid">
       <div class="kpi-card">
         <span class="kpi-title">Reliability Pass Rate</span>
@@ -83,56 +189,6 @@
       </div>
     </section>
 
-    <!-- Interactive Control Panel -->
-    <section class="card control-card">
-      <div class="section-header">
-        <div>
-          <h3>1. Choose Scenario & Execute Agent</h3>
-          <p class="section-desc">Select an agent implementation to observe how invariants behave on compliant vs. bug-ridden trajectories.</p>
-        </div>
-      </div>
-
-      <div class="controls-grid">
-        <div class="form-group">
-          <label for="orderIdInput">Order ID Under Test</label>
-          <input type="text" id="orderIdInput" value="ORD-1001" placeholder="ORD-1001" class="input-field" />
-        </div>
-
-        <div class="form-group">
-          <label>Select Agent Implementation</label>
-          <div class="radio-toggle-group">
-            <label class="radio-card active" id="labelCorrect">
-              <input type="radio" name="agentType" value="correct" checked>
-              <div class="radio-card-content">
-                <span class="radio-title">✅ Compliant Agent</span>
-                <span class="radio-desc"><code>check_order</code> ➔ <code>refund_order</code></span>
-              </div>
-            </label>
-            <label class="radio-card" id="labelBroken">
-              <input type="radio" name="agentType" value="broken">
-              <div class="radio-card-content">
-                <span class="radio-title">❌ Buggy Agent (Regression)</span>
-                <span class="radio-desc"><code>refund_order</code> ➔ <code>check_order</code></span>
-              </div>
-            </label>
-          </div>
-        </div>
-      </div>
-
-      <div class="button-row">
-        <button id="btnRunEval" class="btn btn-primary">
-          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polygon points="5 3 19 12 5 21 5 3"/></svg>
-          Run Full Invariant Evaluation
-        </button>
-        <button id="btnQuickCompare" class="btn btn-secondary">
-          ⚡ Side-by-Side Root Cause Compare
-        </button>
-        <button id="btnSimulateCI" class="btn btn-secondary">
-          🚀 Run Simulated CI Pipeline
-        </button>
-      </div>
-    </section>
-
     <!-- Loading State -->
     <div id="loadingIndicator" class="loading-state hidden">
       <div class="spinner"></div>
@@ -151,11 +207,15 @@
 
         <div class="info-block">
           <div class="info-row">
+            <span class="info-label">Active Scenario:</span>
+            <span id="resScenarioTitle" style="color: #60a5fa; font-weight: 600;"></span>
+          </div>
+          <div class="info-row">
             <span class="info-label">Trace ID:</span>
             <code id="resTraceId" class="code-pill"></code>
           </div>
           <div class="info-row">
-            <span class="info-label">User Output:</span>
+            <span class="info-label">Agent Output:</span>
             <span id="resAgentOutput" class="text-output"></span>
           </div>
           <div class="info-row">
@@ -223,7 +283,8 @@
           <div class="reg-details">
             <div><strong>Regression ID:</strong> <code id="regId"></code></div>
             <div><strong>Source Failure ID:</strong> <code id="regSourceFail"></code></div>
-            <div><strong>Enforced Contract:</strong> <code>check_order ➔ refund_order</code></div>
+            <div><strong>Target Test Case:</strong> <span id="regTargetCase"></span></div>
+            <div><strong>Enforced Contract:</strong> <code id="regLockedContract"></code></div>
             <p class="reg-note">"This production failure was automatically compiled into an immutable regression test case. Any future PR that inverts this tool order will fail build checks."</p>
           </div>
         </div>
@@ -234,7 +295,7 @@
             <span class="alert-badge-green">✔ All Invariants Satisfied</span>
             <span class="badge badge-success">Score 1.0 (100%)</span>
           </div>
-          <p class="pass-desc">The agent properly validated order eligibility prior to issuing the refund. Sequence, safety, presence, and latency invariants fully verified.</p>
+          <p class="pass-desc" id="passCardDesc">The agent properly validated prerequisites before initiating side-effects. Sequence, safety, presence, and latency invariants fully verified.</p>
         </div>
 
       </div>
@@ -246,7 +307,7 @@
       <div class="section-header">
         <div>
           <h3>Side-by-Side Trajectory Comparison</h3>
-          <p class="section-desc">Comparing the compliant agent vs. the broken agent on the same request.</p>
+          <p class="section-desc" id="compareSub">Comparing compliant agent vs. broken agent on the active scenario.</p>
         </div>
         <button id="btnCloseCompare" class="btn-close">✕</button>
       </div>
@@ -256,12 +317,8 @@
             <h5>✅ Compliant Agent</h5>
             <span class="badge badge-success">PASS</span>
           </div>
-          <div class="traj-vis">
-            <div class="step-card step-ok">1. check_order (eligibility verified)</div>
-            <div class="step-arrow">↓</div>
-            <div class="step-card step-ok">2. refund_order (refund issued)</div>
-          </div>
-          <div class="output-preview">Output: "Order ORD-1001 refunded successfully"</div>
+          <div class="traj-vis" id="comparePassVis"></div>
+          <div class="output-preview" id="comparePassOut"></div>
         </div>
 
         <div class="compare-col" id="colFail">
@@ -269,13 +326,9 @@
             <h5>❌ Buggy Agent</h5>
             <span class="badge badge-danger">FAIL</span>
           </div>
-          <div class="traj-vis">
-            <div class="step-card step-err">1. refund_order (MONEY REFUNDED FIRST!)</div>
-            <div class="step-arrow">↓</div>
-            <div class="step-card step-warn">2. check_order (checked too late)</div>
-          </div>
-          <div class="output-preview">Output: "Order ORD-1001 refunded successfully"</div>
-          <div class="note-box">Notice: The outputs are identical, but only <code>aireliability</code> caught the illegal financial operation!</div>
+          <div class="traj-vis" id="compareFailVis"></div>
+          <div class="output-preview" id="compareFailOut"></div>
+          <div class="note-box">Notice: The outputs are identical, but only <code>aireliability</code> caught the illegal side-effect ordering!</div>
         </div>
       </div>
     </section>
@@ -284,8 +337,8 @@
     <section id="ciSection" class="card ci-card hidden">
       <div class="section-header">
         <div>
-          <h3>Simulated CI/CD Pipeline</h3>
-          <p class="section-desc">How <code>aireliability</code> acts as a gatekeeper in your GitHub Actions or GitLab CI.</p>
+          <h3>Simulated CI/CD Pipeline Gatekeeper</h3>
+          <p class="section-desc">How <code>aireliability</code> acts as a quality gatekeeper in GitHub Actions or GitLab CI.</p>
         </div>
         <button id="btnCloseCI" class="btn-close">✕</button>
       </div>
