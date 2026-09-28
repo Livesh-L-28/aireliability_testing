@@ -17,11 +17,12 @@ A comprehensive, dependency-light educational reference project demonstrating ho
 6. [Detailed Code Walkthrough: What We Built](#6-detailed-code-walkthrough-what-we-built)
    - [Part 1: The Agent & Execution Traces (`app.py`)](#part-1-the-agent--execution-traces-apppy)
    - [Part 2: Invariant Evaluation & Regression Synthesis (`reliability_test.py`)](#part-2-invariant-evaluation--regression-synthesis-reliability_testpy)
-7. [Step-by-Step Execution Guide & Expected Terminal Output](#7-step-by-step-execution-guide--expected-terminal-output)
-8. [Under the Hood: How `aireliability` Works Internally](#8-under-the-hood-how-aireliability-works-internally)
-9. [2-Minute Whiteboard / Interview Demo Script](#9-2-minute-whiteboard--interview-demo-script)
-10. [10 Likely Interview Questions & Concise Answers](#10-10-likely-interview-questions--concise-answers)
-11. [What We Learned & Next Steps for Real LLMs](#11-what-we-learned--next-steps-for-real-llms)
+7. [Step-by-Step Execution Guide & Complete Run Commands](#7-step-by-step-execution-guide--complete-run-commands)
+8. [Comprehensive Debugging & Troubleshooting Guide](#8-comprehensive-debugging--troubleshooting-guide)
+9. [Under the Hood: How `aireliability` Works Internally](#9-under-the-hood-how-aireliability-works-internally)
+10. [2-Minute Whiteboard / Interview Demo Script](#10-2-minute-whiteboard--interview-demo-script)
+11. [10 Likely Interview Questions & Concise Answers](#11-10-likely-interview-questions--concise-answers)
+12. [What We Learned & Next Steps for Real LLMs](#12-what-we-learned--next-steps-for-real-llms)
 
 ---
 
@@ -224,14 +225,17 @@ In [`reliability_test.py`](file:///Users/livesh/Ai_reliabilty%20test/aireliabili
 
 ---
 
-## 7. Step-by-Step Execution Guide & Expected Terminal Output
+## 7. Step-by-Step Execution Guide & Complete Run Commands
 
-### Step 1: Run the Agent CLI
+### 1. Terminal / CLI Execution
+
+#### Step 1.1: Run the Standalone Agent
+Executes `refund_agent` and displays the captured tool execution sequence:
 ```bash
 cd "/Users/livesh/Ai_reliabilty test/aireliability-mini-demo"
 python3 app.py
 ```
-**Terminal Output:**
+**Expected Terminal Output:**
 ```text
 Agent request: Refund order ORD-1001
 Tool: check_order
@@ -241,11 +245,12 @@ Result: Order ORD-1001 refunded successfully
 
 ---
 
-### Step 2: Run the Reliability Test Suite
+#### Step 1.2: Run the Reliability Test Suite
+Runs the 4-phase reliability pipeline: Invariant check (PASS) ➔ Inverted agent failure (FAIL) ➔ Structured failure report ➔ Regression test generation:
 ```bash
 python3 reliability_test.py
 ```
-**Terminal Output:**
+**Expected Terminal Output:**
 ```text
 ==================================================
 RELIABILITY TEST SUITE
@@ -283,7 +288,148 @@ Protection Status:  Active (Guards against tool inversion in future runs)
 
 ---
 
-## 8. Under the Hood: How `aireliability` Works Internally
+### 2. Local Interactive Web Studio (FastAPI)
+
+Launch the full interactive visual studio locally:
+```bash
+python3 server.py
+```
+Or specify a custom port:
+```bash
+PORT=8080 python3 server.py
+```
+Open your browser at **[http://localhost:8080/](http://localhost:8080/)**.
+
+---
+
+### 3. API / cURL Execution Commands
+
+You can trigger the evaluation engine directly via REST API:
+
+#### 3.1: Test Compliant Customer Refund Agent
+```bash
+curl -X POST http://localhost:8080/api/run-evaluation \
+  -H "Content-Type: application/json" \
+  -d '{"scenario": "refund", "param": "ORD-1001", "agent_type": "correct"}'
+```
+
+#### 3.2: Test Buggy / Inverted Agent (Triggers Failure & Regression Generation)
+```bash
+curl -X POST http://localhost:8080/api/run-evaluation \
+  -H "Content-Type: application/json" \
+  -d '{"scenario": "refund", "param": "ORD-1001", "agent_type": "broken"}'
+```
+
+#### 3.3: Test Admin Account Security Scenario
+```bash
+curl -X POST http://localhost:8080/api/run-evaluation \
+  -H "Content-Type: application/json" \
+  -d '{"scenario": "admin", "param": "USR-8821", "agent_type": "correct"}'
+```
+
+#### 3.4: Test Bank Wire Transfer Scenario
+```bash
+curl -X POST http://localhost:8080/api/run-evaluation \
+  -H "Content-Type: application/json" \
+  -d '{"scenario": "wire", "param": "CUST-902", "agent_type": "broken"}'
+```
+
+---
+
+## 8. Comprehensive Debugging & Troubleshooting Guide
+
+When debugging tool-calling agents and invariant testing pipelines, use these diagnostic strategies and solutions for common issues:
+
+### 8.1 Common Errors & Fixes
+
+#### Issue 1: `zsh: bad pattern: ^[[200~python3`
+- **Cause**: Bracketed paste mode artifact in your terminal when copying multiline shell code or terminal escape sequences.
+- **Fix**: Press `Ctrl + C` to clear the terminal prompt, then type `python3 reliability_test.py` cleanly without leading whitespace or escape sequences.
+
+#### Issue 2: `[Errno 48] Address already in use`
+- **Cause**: Another process (like a previous instance of Uvicorn or another local server) is already listening on the default port (8000 or 8080).
+- **Diagnosis Command**:
+  ```bash
+  lsof -i :8080   # or :8000
+  ```
+- **Fix Command**:
+  ```bash
+  # Option A: Kill the process using the port
+  kill -9 $(lsof -t -i :8080)
+  
+  # Option B: Run the server on an alternate port
+  PORT=9000 python3 server.py
+  ```
+
+#### Issue 3: `pydantic_core.ValidationError: Instance is frozen`
+- **Cause**: `ExecutionTrace` instances in `aireliability` are immutable (frozen) Pydantic models. Trying to modify fields after instantiation (e.g. `trace.latency_ms = 120.0`) raises a runtime validation error.
+- **Fix**: Always pass all fields (including `latency_ms`, `token_usage`, `steps`) directly into the constructor, or use `trace.model_copy(update={"latency_ms": 120.0})`:
+  ```python
+  # Correct pattern:
+  trace = ExecutionTrace(
+      trace_id=f"trace_{uuid.uuid4().hex[:12]}",
+      latency_ms=elapsed_ms,
+      steps=steps,
+      ...
+  )
+  ```
+
+#### Issue 4: `src refspec main does not match any` (Git Push Error)
+- **Cause**: Attempting to push to a remote repository before any files have been staged and committed to the local `main` branch.
+- **Fix**:
+  ```bash
+  git add .
+  git commit -m "Initial commit"
+  git branch -M main
+  git push -u origin main
+  ```
+
+---
+
+### 8.2 Debugging Agent Execution Traces
+
+To inspect the exact internal structure of an `ExecutionTrace` during runtime, run this one-liner in your terminal:
+
+```bash
+python3 -c "
+from app import refund_agent
+output, trace = refund_agent('ORD-1001')
+import json
+print(json.dumps(trace.model_dump(mode='json'), indent=2))
+"
+```
+**Diagnostic Inspection Checklist:**
+1. Check that `step.type == StepType.TOOL` (otherwise `ToolOrder` will ignore the step during sequence filtering).
+2. Check that `step.name` matches the expected string in `expected_order` exactly (case-sensitive).
+3. Verify that `started_at` timestamps are valid UTC datetimes with timezone awareness (`timezone.utc`).
+
+---
+
+### 8.3 Debugging Invariant Evaluation Failures
+
+To isolate and inspect why an invariant failed without running the full suite:
+
+```python
+from aireliability import ToolOrder
+from app import broken_refund_agent
+
+output, trace = broken_refund_agent("ORD-1001")
+invariant = ToolOrder(["check_order", "refund_order"])
+result = invariant.evaluate(trace)
+
+print(f"Passed:   {result.passed}")
+print(f"Score:    {result.score}")
+print(f"Message:  {result.message}")
+print(f"Evidence: {result.evidence}")
+```
+**Inspecting `result.evidence`:**
+- `result.evidence['actual_order']`: Displays the exact sequence extracted from the trace steps.
+- `result.evidence['expected_order']`: The required invariant sequence.
+- Comparing these two arrays will immediately pinpoint whether a tool was omitted or executed in reverse order.
+
+---
+
+## 9. Under the Hood: How `aireliability` Works Internally
 
 1. **Step Filtering**:
    When `ToolOrder.evaluate(trace)` is invoked, it extracts all steps where `step.type == StepType.TOOL`:
@@ -304,7 +450,7 @@ Protection Status:  Active (Guards against tool inversion in future runs)
 
 ---
 
-## 9. 2-Minute Whiteboard / Interview Demo Script
+## 10. 2-Minute Whiteboard / Interview Demo Script
 
 Follow this exact sequence in an interview or whiteboard session:
 
@@ -334,7 +480,7 @@ python reliability_test.py
 
 ---
 
-## 10. 10 Likely Interview Questions & Concise Answers
+## 11. 10 Likely Interview Questions & Concise Answers
 
 1. **Q: Why can't traditional unit tests solve this problem?**
    **A:** Traditional unit tests verify deterministic return values of static functions. AI agents dynamically choose tool sequences, so testing only the final string output misses unauthorized or inverted tool executions.
@@ -359,7 +505,7 @@ python reliability_test.py
 
 ---
 
-## 11. What We Learned & Next Steps for Real LLMs
+## 12. What We Learned & Next Steps for Real LLMs
 
 ### Key Takeaways
 1. **Trajectories Matter More Than Text**: In tool-calling agents, intermediate side-effects define business reliability, not surface-level natural language fluency.
