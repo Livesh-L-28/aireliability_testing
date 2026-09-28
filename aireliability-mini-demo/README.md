@@ -1,5 +1,8 @@
 # aireliability-mini-demo
 
+> 🚀 **Live Interactive Demo:** [https://aireliability-testing.vercel.app/](https://aireliability-testing.vercel.app/)  
+> 📦 **GitHub Repository:** [https://github.com/Livesh-L-28/aireliability_testing](https://github.com/Livesh-L-28/aireliability_testing)
+
 A comprehensive, dependency-light educational reference project demonstrating how the **`aireliability`** package works internally, how to capture agent trajectories into typed traces, how to enforce deterministic invariants on tool execution order, and how to automatically synthesize regression tests from evaluation failures.
 
 ---
